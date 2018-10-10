@@ -3,237 +3,256 @@ title: API Reference
 
 language_tabs: # must be one of https://git.io/vQNgJ
   - shell
-  - ruby
-  - python
-  - javascript
 
 toc_footers:
   - <a href='#'>Sign Up for a Developer Key</a>
   - <a href='https://github.com/lord/slate'>Documentation Powered by Slate</a>
 
-includes:
-  - errors
 
 search: true
 ---
 
 # Introduction
 
-Welcome to the Kittn API! You can use our API to access Kittn API endpoints, which can get information on various cats, kittens, and breeds in our database.
+Welcome to the Zeno API!
 
-We have language bindings in Shell, Ruby, Python, and JavaScript! You can view code examples in the dark area to the right, and you can switch the programming language of the examples with the tabs in the top right.
+Zeno REST & Streaming API version 1.0 provides programmatic access to cryptocurrency live pricing data and OHLC historical data.
 
-This example API documentation page was created with [Slate](https://github.com/lord/slate). Feel free to edit it and use it as a base for your own API's documentation.
+By using Zeno API you confirm that you have read and accept [API License Agreement][https://zenotrader.com/api-license-agreement]
 
-# Authentication
+# Development Guide
 
-> To authorize, use this code:
+## API Explorer
 
-```ruby
-require 'kittn'
+You can explore API using [SwaggerUI](https://api.zenotrader.com/explorer/v1)
 
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-```
+## API URLs
 
-```python
-import kittn
+**Production environment:**
 
-api = kittn.authorize('meowmeowmeow')
-```
+Type | URL
+-----|-----
+REST | https://api.zenotrader.com/api/v1/
+Streaming | wss://api.zenotrader.com/ws/v1
+
+
+# REST API Reference
+
+## HTTP Status codes
+
+* 200 OK Successful request
+* 400 Bad Request. Returns JSON with the error message
+* 401 Unauthorized. Authorisation required or failed
+* 403 Forbidden. Action is forbidden for API key
+* 500 Internal Server. Internal Server Error
+* 503 Service Unavailable. Service is down for maintenance
+* 504 Gateway Timeout. Request timeout expired
+
+# Authorisation
+
+### HTTP Request
+
+`POST https://api.zenotrader.com/api/v1/auth/signup`
+Fields: email, name, password
+
+`POST https://api.zenotrader.com/api/v1/auth/login`
+Fields: email, password
+
+`POST https://api.zenotrader.com/api/v1/auth/logout`
 
 ```shell
-# With shell, you can just pass the correct header with each request
-curl "api_endpoint_here"
-  -H "Authorization: meowmeowmeow"
+
+curl "http://api.zenotrader.com/api/v1/auth/logout"
+  -H "Authorization: Bearer {JWT}"
+
+
+# Exchanges
+
+## Get All Exchanges
+
+This endpoint retrieves all supported exchanges.
+
+### HTTP Request
+
+`GET https://api.zenotrader.com/api/v1/exchanges`
+
+```shell
+
+curl "http://api.zenotrader.com/api/v1/exchanges"
+  -H "Authorization: Bearer {JWT}"
+
+# The above command returns JSON structured like this:
+
+{
+  "exchanges":
+  [
+    {
+      "id": "binance",
+      "name": "Binance",
+      "active": true,
+      "online": true
+    },
+    {
+      "id": "hitbtc",
+      "name": "HitBTC",
+      "active": true,
+      "online": true
+    },
+    ...
+  ]
+}
+
 ```
-
-```javascript
-const kittn = require('kittn');
-
-let api = kittn.authorize('meowmeowmeow');
-```
-
-> Make sure to replace `meowmeowmeow` with your API key.
-
-Kittn uses API keys to allow access to the API. You can register a new Kittn API key at our [developer portal](http://example.com/developers).
-
-Kittn expects for the API key to be included in all API requests to the server in a header that looks like the following:
-
-`Authorization: meowmeowmeow`
 
 <aside class="notice">
-You must replace <code>meowmeowmeow</code> with your personal API key.
+You must replace <code>JWT</code> with your JWT.
 </aside>
 
-# Kittens
+# Currencies & Pairs
 
-## Get All Kittens
+## Get All Exchange's Currencies
 
-```ruby
-require 'kittn'
+This endpoint retrieves all supported exchanges.
 
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-api.kittens.get
-```
+### HTTP Request
 
-```python
-import kittn
-
-api = kittn.authorize('meowmeowmeow')
-api.kittens.get()
-```
+`GET https://api.zenotrader.com/api/v1/exchanges/{exchange_id}/currencies`
 
 ```shell
-curl "http://example.com/api/kittens"
-  -H "Authorization: meowmeowmeow"
+
+curl "http://api.zenotrader.com/api/v1/exchanges/binance/currencies"
+  -H "Authorization: Bearer {JWT}"
+
+# The above command returns JSON structured like this:
+
+{
+  "exchange": "zeno",
+  "currencies":
+  [
+    {
+      "id": "BTC",
+      "name": "Bitcoin",
+      "delisted": false
+    },
+    {
+      "id": "ETH",
+      "name": "Ethereum",
+      "delisted": false
+    },
+    ...
+  ]
+}
+
 ```
 
-```javascript
-const kittn = require('kittn');
+<aside class="notice">
+You must replace <code>{JWT}</code> with your JWT.
+</aside>
 
-let api = kittn.authorize('meowmeowmeow');
-let kittens = api.kittens.get();
+
+## Get All Pairs
+
+This endpoint retrieves all pairs for specific exchanges.
+
+### HTTP Request
+
+`GET https://api.zenotrader.com/api/v1/candles/{exchange_id}/pairs`
+
+```shell
+
+curl "http://api.zenotrader.com/api/v1/candles/binance/pairs"
+  -H "Authorization: Bearer {JWT}"
+
+# The above command returns JSON structured like this:
+
+{
+  "exchange": "zeno",
+  "pairs":
+  [
+    {
+      "id": "BTCUSD",
+      "symbol": "BTC/USD",
+      "base": "BTC",
+      "quote": "USD",
+      'active': true,
+      'precision': {
+          'price': 8,
+          'amount': 8,
+          'cost': 8,
+
+      },
+      "quantityIncrement": "0.001",
+      "tickSize": "0.000001",
+      "feeCurrency": "BTC"
+    },
+    ...
+  ]
+}
+
+```
+
+<aside class="notice">
+You must replace <code>{JWT}</code> with your JWT.
+</aside>
+
+
+
+# Candles
+
+## Get Candles
+
+This endpoint retrieves candles for specific exchanges, pair and timeframe.
+
+```shell
+curl "https://api.zenotrader.com/api/v1/candles/{exchange_id}/{base}/{quote}/{timeframe}"
+  -H "Authorization: Bearer {JWT}"
 ```
 
 > The above command returns JSON structured like this:
 
 ```json
-[
-  {
-    "id": 1,
-    "name": "Fluffums",
-    "breed": "calico",
-    "fluffiness": 6,
-    "cuteness": 7
-  },
-  {
-    "id": 2,
-    "name": "Max",
-    "breed": "unknown",
-    "fluffiness": 5,
-    "cuteness": 10
-  }
-]
+{
+  "exchange": "zeno",
+  "base": "eth",
+  "quote": "btc",
+  "candles":
+  [
+    {
+      "h": 100.001,
+      "o": 95.05,
+      "c": 92.75,
+      "l": 89.4,
+      "ts": 9999999990
+    },
+    {
+      "h": 98.42,
+      "o": 92.71,
+      "c": 91.15,
+      "l": 87.4,
+      "ts": 9999999980
+    }
+  ]
+}
 ```
 
 This endpoint retrieves all kittens.
 
 ### HTTP Request
 
-`GET http://example.com/api/kittens`
+`GET https://api.zenotrader.com/api/v1/candles/{exchange_id}/{base}/{quote}/{timeframe}?offset={offset}&limit={limit}`
 
 ### Query Parameters
 
 Parameter | Default | Description
 --------- | ------- | -----------
-include_cats | false | If set to true, the result will also include cats.
-available | true | If set to false, the result will include kittens that have already been adopted.
+exchange_id | - | ID of the exchange, for example: "zeno"
+base | - | ID of the base currency, for example "eth"
+quote | - | ID of the quote currency, for example "btc"
+timeframe | - | candle timeframe, supported timeframes: m1, m5, m15, m30, h1, d1, w1
+offset | current timestamp | timestamp of the first candle
+limit | 100 | number of candles to get behind offset  
+
 
 <aside class="success">
-Remember — a happy kitten is an authenticated kitten!
+You must replace <code>{JWT}</code> with your JWT.
 </aside>
-
-## Get a Specific Kitten
-
-```ruby
-require 'kittn'
-
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-api.kittens.get(2)
-```
-
-```python
-import kittn
-
-api = kittn.authorize('meowmeowmeow')
-api.kittens.get(2)
-```
-
-```shell
-curl "http://example.com/api/kittens/2"
-  -H "Authorization: meowmeowmeow"
-```
-
-```javascript
-const kittn = require('kittn');
-
-let api = kittn.authorize('meowmeowmeow');
-let max = api.kittens.get(2);
-```
-
-> The above command returns JSON structured like this:
-
-```json
-{
-  "id": 2,
-  "name": "Max",
-  "breed": "unknown",
-  "fluffiness": 5,
-  "cuteness": 10
-}
-```
-
-This endpoint retrieves a specific kitten.
-
-<aside class="warning">Inside HTML code blocks like this one, you can't use Markdown, so use <code>&lt;code&gt;</code> blocks to denote code.</aside>
-
-### HTTP Request
-
-`GET http://example.com/kittens/<ID>`
-
-### URL Parameters
-
-Parameter | Description
---------- | -----------
-ID | The ID of the kitten to retrieve
-
-## Delete a Specific Kitten
-
-```ruby
-require 'kittn'
-
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-api.kittens.delete(2)
-```
-
-```python
-import kittn
-
-api = kittn.authorize('meowmeowmeow')
-api.kittens.delete(2)
-```
-
-```shell
-curl "http://example.com/api/kittens/2"
-  -X DELETE
-  -H "Authorization: meowmeowmeow"
-```
-
-```javascript
-const kittn = require('kittn');
-
-let api = kittn.authorize('meowmeowmeow');
-let max = api.kittens.delete(2);
-```
-
-> The above command returns JSON structured like this:
-
-```json
-{
-  "id": 2,
-  "deleted" : ":("
-}
-```
-
-This endpoint deletes a specific kitten.
-
-### HTTP Request
-
-`DELETE http://example.com/kittens/<ID>`
-
-### URL Parameters
-
-Parameter | Description
---------- | -----------
-ID | The ID of the kitten to delete
-
